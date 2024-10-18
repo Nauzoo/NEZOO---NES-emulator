@@ -368,6 +368,33 @@ void cpuExecute() {
             case 0x10: myCpu->cycles = 2; cpuRELAddMod(); cpuInsBPL(); break;
             // BRK
             case 0x00: myCpu->cycles = 7; cpuIMPAddMod(); cpuInsBRK(); break;
+            // BVC
+            case 0x50: myCpu->cycles = 2; cpuRELAddMod(); cpuInsBVC(); break;
+            // BVS
+            case 0x70: myCpu->cycles = 2; cpuRELAddMod(); cpuInsBVS(); break;
+            // CLC
+            case 0x18: myCpu->cycles = 2; cpuIMPAddMod(); cpuInsCLC(); break;
+            // CLD
+            case 0xD8: myCpu->cycles = 2; cpuIMPAddMod(); cpuInsCLD(); break;
+            // CLI
+            case 0x58: myCpu->cycles = 2; cpuIMPAddMod(); cpuInsCLI(); break;
+            // CLV
+            case 0xB8: myCpu->cycles = 2; cpuIMPAddMod(); cpuInsCLV(); break;
+            // CMP
+            case 0xC9: myCpu->cycles = 2; cpuIMMAddMod(); cpuInsCMP(); break;
+            case 0xC5: myCpu->cycles = 3; cpuZP0AddMod(); cpuInsCMP(); break;
+            case 0xD5: myCpu->cycles = 4; cpuZPXAddMod(); cpuInsCMP(); break;
+            case 0xCD: myCpu->cycles = 4; cpuABSAddMod(); cpuInsCMP(); break;
+            case 0xDD: myCpu->cycles = 4; cpuABXAddMod(); cpuInsCMP(); break;
+            case 0xD9: myCpu->cycles = 4; cpuABYAddMod(); cpuInsCMP(); break;
+            case 0xC1: myCpu->cycles = 6; cpuIZXAddMod(); cpuInsCMP(); break;
+            case 0xD1: myCpu->cycles = 5; cpuIZYAddMod(); cpuInsCMP(); break;
+            // CPX
+            case 0xE0: myCpu->cycles = 2; cpuIMMAddMod(); cpuInsCPX(); break;
+            case 0xE4: myCpu->cycles = 3; cpuZP0AddMod(); cpuInsCPX(); break;
+            case 0xEC: myCpu->cycles = 4; cpuABSAddMod(); cpuInsCPX(); break;
+
+
 
 
 
