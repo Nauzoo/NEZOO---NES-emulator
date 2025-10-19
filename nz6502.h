@@ -2,6 +2,15 @@
 #include "nzBUS.h"
 #include <stdbool.h>
 
+typedef struct InstructionSet {
+
+    char* name;
+    void (*instruction)();
+    void (*addrMode)();
+    uint8_t cycles;
+
+} InstructionSet;
+
 typedef struct CPU {
 
     Word PgCount;    //[Reg.] Program counter (Points to the next instruction to be executed)
@@ -33,8 +42,9 @@ typedef struct CPU {
 
     Byte cycles;      // stores the number of cycles for an operation
 
-
 }CPU;
+
+
 
 /** sets a pointer to the CPU strcuct for accessing the internal functions */
 void cpuCreate(CPU * cpu);
@@ -116,6 +126,9 @@ void cpuIZYAddMod();
 
 
 // Instructions:
+
+/** instruction: Ilegal instruction */
+void cpuInsXXX();
 
 /** instruction: Add with carry **/
 void cpuInsADC();

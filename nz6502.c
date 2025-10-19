@@ -7,6 +7,28 @@ BUS * myBus;
 CPU * myCpu;
 bool lIMP;
 
+
+InstructionSet lookup[16][16] = 
+	{
+        { "BRK\0", &cpuInsBRK, &cpuIMMAddMod, 7 },{ "ORA\0", &cpuInsORA, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 3 },{ "ORA\0", &cpuInsORA, &cpuZP0AddMod, 3 },{ "ASL\0", &cpuInsASL, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "PHP\0", &cpuInsPHP, &cpuIMPAddMod, 3 },{ "ORA\0", &cpuInsORA, &cpuIMMAddMod, 2 },{ "ASL\0", &cpuInsASL, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ORA\0", &cpuInsORA, &cpuABSAddMod, 4 },{ "ASL\0", &cpuInsASL, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
+        { "BPL\0", &cpuInsBPL, &cpuRELAddMod, 2 },{ "ORA\0", &cpuInsORA, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ORA\0", &cpuInsORA, &cpuZPXAddMod, 4 },{ "ASL\0", &cpuInsASL, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "CLC\0", &cpuInsCLC, &cpuIMPAddMod, 2 },{ "ORA\0", &cpuInsORA, &cpuABYAddMod, 4 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ORA\0", &cpuInsORA, &cpuABXAddMod, 4 },{ "ASL\0", &cpuInsASL, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
+        { "JSR\0", &cpuInsJSR, &cpuABSAddMod, 6 },{ "AND\0", &cpuInsAND, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "BIT\0", &cpuInsBIT, &cpuZP0AddMod, 3 },{ "AND\0", &cpuInsAND, &cpuZP0AddMod, 3 },{ "ROL\0", &cpuInsROL, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "PLP\0", &cpuInsPLP, &cpuIMPAddMod, 4 },{ "AND\0", &cpuInsAND, &cpuIMMAddMod, 2 },{ "ROL\0", &cpuInsROL, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "BIT\0", &cpuInsBIT, &cpuABSAddMod, 4 },{ "AND\0", &cpuInsAND, &cpuABSAddMod, 4 },{ "ROL\0", &cpuInsROL, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
+        { "BMI\0", &cpuInsBMI, &cpuRELAddMod, 2 },{ "AND\0", &cpuInsAND, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "AND\0", &cpuInsAND, &cpuZPXAddMod, 4 },{ "ROL\0", &cpuInsROL, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "SEC\0", &cpuInsSEC, &cpuIMPAddMod, 2 },{ "AND\0", &cpuInsAND, &cpuABYAddMod, 4 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "AND\0", &cpuInsAND, &cpuABXAddMod, 4 },{ "ROL\0", &cpuInsROL, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
+        { "RTI\0", &cpuInsRTI, &cpuIMPAddMod, 6 },{ "EOR\0", &cpuInsEOR, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 3 },{ "EOR\0", &cpuInsEOR, &cpuZP0AddMod, 3 },{ "LSR\0", &cpuInsLSR, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "PHA\0", &cpuInsPHA, &cpuIMPAddMod, 3 },{ "EOR\0", &cpuInsEOR, &cpuIMMAddMod, 2 },{ "LSR\0", &cpuInsLSR, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "JMP\0", &cpuInsJMP, &cpuABSAddMod, 3 },{ "EOR\0", &cpuInsEOR, &cpuABSAddMod, 4 },{ "LSR\0", &cpuInsLSR, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
+        { "BVC\0", &cpuInsBVC, &cpuRELAddMod, 2 },{ "EOR\0", &cpuInsEOR, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "EOR\0", &cpuInsEOR, &cpuZPXAddMod, 4 },{ "LSR\0", &cpuInsLSR, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "CLI\0", &cpuInsCLI, &cpuIMPAddMod, 2 },{ "EOR\0", &cpuInsEOR, &cpuABYAddMod, 4 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "EOR\0", &cpuInsEOR, &cpuABXAddMod, 4 },{ "LSR\0", &cpuInsLSR, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
+        { "RTS\0", &cpuInsRTS, &cpuIMPAddMod, 6 },{ "ADC\0", &cpuInsADC, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 3 },{ "ADC\0", &cpuInsADC, &cpuZP0AddMod, 3 },{ "ROR\0", &cpuInsROR, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "PLA\0", &cpuInsPLA, &cpuIMPAddMod, 4 },{ "ADC\0", &cpuInsADC, &cpuIMMAddMod, 2 },{ "ROR\0", &cpuInsROR, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "JMP\0", &cpuInsJMP, &cpuINDAddMod, 5 },{ "ADC\0", &cpuInsADC, &cpuABSAddMod, 4 },{ "ROR\0", &cpuInsROR, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
+        { "BVS\0", &cpuInsBVS, &cpuRELAddMod, 2 },{ "ADC\0", &cpuInsADC, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ADC\0", &cpuInsADC, &cpuZPXAddMod, 4 },{ "ROR\0", &cpuInsROR, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "SEI\0", &cpuInsSEI, &cpuIMPAddMod, 2 },{ "ADC\0", &cpuInsADC, &cpuABYAddMod, 4 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ADC\0", &cpuInsADC, &cpuABXAddMod, 4 },{ "ROR\0", &cpuInsROR, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
+        { "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "STA\0", &cpuInsSTA, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "STY\0", &cpuInsSTY, &cpuZP0AddMod, 3 },{ "STA\0", &cpuInsSTA, &cpuZP0AddMod, 3 },{ "STX\0", &cpuInsSTX, &cpuZP0AddMod, 3 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 3 },{ "DEY\0", &cpuInsDEY, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "TXA\0", &cpuInsTXA, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "STY\0", &cpuInsSTY, &cpuABSAddMod, 4 },{ "STA\0", &cpuInsSTA, &cpuABSAddMod, 4 },{ "STX\0", &cpuInsSTX, &cpuABSAddMod, 4 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 4 },
+        { "BCC\0", &cpuInsBCC, &cpuRELAddMod, 2 },{ "STA\0", &cpuInsSTA, &cpuIZYAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "STY\0", &cpuInsSTY, &cpuZPXAddMod, 4 },{ "STA\0", &cpuInsSTA, &cpuZPXAddMod, 4 },{ "STX\0", &cpuInsSTX, &cpuZPYAddMod, 4 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 4 },{ "TYA\0", &cpuInsTYA, &cpuIMPAddMod, 2 },{ "STA\0", &cpuInsSTA, &cpuABYAddMod, 5 },{ "TXS\0", &cpuInsTXS, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 5 },{ "STA\0", &cpuInsSTA, &cpuABXAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },
+        { "LDY\0", &cpuInsLDY, &cpuIMMAddMod, 2 },{ "LDA\0", &cpuInsLDA, &cpuIZXAddMod, 6 },{ "LDX\0", &cpuInsLDX, &cpuIMMAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "LDY\0", &cpuInsLDY, &cpuZP0AddMod, 3 },{ "LDA\0", &cpuInsLDA, &cpuZP0AddMod, 3 },{ "LDX\0", &cpuInsLDX, &cpuZP0AddMod, 3 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 3 },{ "TAY\0", &cpuInsTAY, &cpuIMPAddMod, 2 },{ "LDA\0", &cpuInsLDA, &cpuIMMAddMod, 2 },{ "TAX\0", &cpuInsTAX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "LDY\0", &cpuInsLDY, &cpuABSAddMod, 4 },{ "LDA\0", &cpuInsLDA, &cpuABSAddMod, 4 },{ "LDX\0", &cpuInsLDX, &cpuABSAddMod, 4 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 4 },
+        { "BCS\0", &cpuInsBCS, &cpuRELAddMod, 2 },{ "LDA\0", &cpuInsLDA, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "LDY\0", &cpuInsLDY, &cpuZPXAddMod, 4 },{ "LDA\0", &cpuInsLDA, &cpuZPXAddMod, 4 },{ "LDX\0", &cpuInsLDX, &cpuZPYAddMod, 4 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 4 },{ "CLV\0", &cpuInsCLV, &cpuIMPAddMod, 2 },{ "LDA\0", &cpuInsLDA, &cpuABYAddMod, 4 },{ "TSX\0", &cpuInsTSX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 4 },{ "LDY\0", &cpuInsLDY, &cpuABXAddMod, 4 },{ "LDA\0", &cpuInsLDA, &cpuABXAddMod, 4 },{ "LDX\0", &cpuInsLDX, &cpuABYAddMod, 4 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 4 },
+        { "CPY\0", &cpuInsCPY, &cpuIMMAddMod, 2 },{ "CMP\0", &cpuInsCMP, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "CPY\0", &cpuInsCPY, &cpuZP0AddMod, 3 },{ "CMP\0", &cpuInsCMP, &cpuZP0AddMod, 3 },{ "DEC\0", &cpuInsDEC, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "INY\0", &cpuInsINY, &cpuIMPAddMod, 2 },{ "CMP\0", &cpuInsCMP, &cpuIMMAddMod, 2 },{ "DEX\0", &cpuInsDEX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "CPY\0", &cpuInsCPY, &cpuABSAddMod, 4 },{ "CMP\0", &cpuInsCMP, &cpuABSAddMod, 4 },{ "DEC\0", &cpuInsDEC, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
+        { "BNE\0", &cpuInsBNE, &cpuRELAddMod, 2 },{ "CMP\0", &cpuInsCMP, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "CMP\0", &cpuInsCMP, &cpuZPXAddMod, 4 },{ "DEC\0", &cpuInsDEC, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "CLD\0", &cpuInsCLD, &cpuIMPAddMod, 2 },{ "CMP\0", &cpuInsCMP, &cpuABYAddMod, 4 },{ "NOP\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "CMP\0", &cpuInsCMP, &cpuABXAddMod, 4 },{ "DEC\0", &cpuInsDEC, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
+        { "CPX\0", &cpuInsCPX, &cpuIMMAddMod, 2 },{ "SBC\0", &cpuInsSBC, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "CPX\0", &cpuInsCPX, &cpuZP0AddMod, 3 },{ "SBC\0", &cpuInsSBC, &cpuZP0AddMod, 3 },{ "INC\0", &cpuInsINC, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "INX\0", &cpuInsINX, &cpuIMPAddMod, 2 },{ "SBC\0", &cpuInsSBC, &cpuIMMAddMod, 2 },{ "NOP\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsSBC, &cpuIMPAddMod, 2 },{ "CPX\0", &cpuInsCPX, &cpuABSAddMod, 4 },{ "SBC\0", &cpuInsSBC, &cpuABSAddMod, 4 },{ "INC\0", &cpuInsINC, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
+        { "BEQ\0", &cpuInsBEQ, &cpuRELAddMod, 2 },{ "SBC\0", &cpuInsSBC, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "SBC\0", &cpuInsSBC, &cpuZPXAddMod, 4 },{ "INC\0", &cpuInsINC, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "SED\0", &cpuInsSED, &cpuIMPAddMod, 2 },{ "SBC\0", &cpuInsSBC, &cpuABYAddMod, 4 },{ "NOP\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "SBC\0", &cpuInsSBC, &cpuABXAddMod, 4 },{ "INC\0", &cpuInsINC, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
+    };
+
+
 void cpuCreate(CPU *cpu) {
     myCpu = cpu;
 
@@ -322,84 +344,8 @@ void cpuExecute() {
 
         Byte opcode = cpuRead(myCpu->PgCount, false);
 
-        switch (opcode) {
-            // ADC
-            case 0x69:
-                myCpu->cycles = 2; // sets the cpu cycles
-                cpuIMMAddMod();    // calls adressing mode
-                cpuInsADC();       // calls instruction
-                break;
-            case 0x65: myCpu->cycles = 3; cpuZP0AddMod(); cpuInsADC(); break;
-            case 0x75: myCpu->cycles = 4; cpuZPXAddMod(); cpuInsADC(); break;
-            case 0x6D: myCpu->cycles = 4; cpuABSAddMod(); cpuInsADC(); break;
-            case 0x7D: myCpu->cycles = 4; cpuABXAddMod(); cpuInsADC(); break;
-            case 0x79: myCpu->cycles = 4; cpuABYAddMod(); cpuInsADC(); break;
-            case 0x61: myCpu->cycles = 6; cpuIZXAddMod(); cpuInsADC(); break;
-            case 0x71: myCpu->cycles = 5; cpuIZYAddMod(); cpuInsADC(); break;
-            // AND
-            case 0x29: myCpu->cycles = 2; cpuIMMAddMod(); cpuInsAND(); break;
-            case 0x25: myCpu->cycles = 3; cpuZP0AddMod(); cpuInsAND(); break;
-            case 0x35: myCpu->cycles = 4; cpuZPXAddMod(); cpuInsAND(); break;
-            case 0x2D: myCpu->cycles = 4; cpuABSAddMod(); cpuInsAND(); break;
-            case 0x3D: myCpu->cycles = 4; cpuABXAddMod(); cpuInsAND(); break;
-            case 0x39: myCpu->cycles = 4; cpuABYAddMod(); cpuInsAND(); break;
-            case 0x21: myCpu->cycles = 6; cpuIZXAddMod(); cpuInsAND(); break;
-            case 0x31: myCpu->cycles = 5; cpuIZYAddMod(); cpuInsAND(); break;
-            //ASL
-            case 0x0A: myCpu->cycles = 2; cpuIMPAddMod(); cpuInsASL(); break;
-            case 0x06: myCpu->cycles = 5; cpuZP0AddMod(); cpuInsASL(); break;
-            case 0x16: myCpu->cycles = 6; cpuZPXAddMod(); cpuInsASL(); break;
-            case 0x0E: myCpu->cycles = 6; cpuABSAddMod(); cpuInsASL(); break;
-            case 0x1E: myCpu->cycles = 7; cpuABXAddMod(); cpuInsASL(); break;
-            // BCC
-            case 0x90: myCpu->cycles = 2; cpuRELAddMod(); cpuInsBCC(); break;
-            //BCS
-            case 0xB0: myCpu->cycles = 2; cpuRELAddMod(); cpuInsBCS(); break;
-            // BEQ
-            case 0xF0: myCpu->cycles = 2; cpuRELAddMod(); cpuInsBEQ(); break;
-            // BIT
-            case 0x24: myCpu->cycles = 3; cpuZP0AddMod(); cpuInsBIT(); break;
-            case 0x2C: myCpu->cycles = 4; cpuABSAddMod(); cpuInsBIT(); break;
-            // BMI
-            case 0x30: myCpu->cycles = 2; cpuRELAddMod(); cpuInsBMI(); break;
-            // BNE
-            case 0xD0: myCpu->cycles = 2; cpuRELAddMod(); cpuInsBNE(); break;
-            // BPL
-            case 0x10: myCpu->cycles = 2; cpuRELAddMod(); cpuInsBPL(); break;
-            // BRK
-            case 0x00: myCpu->cycles = 7; cpuIMPAddMod(); cpuInsBRK(); break;
-            // BVC
-            case 0x50: myCpu->cycles = 2; cpuRELAddMod(); cpuInsBVC(); break;
-            // BVS
-            case 0x70: myCpu->cycles = 2; cpuRELAddMod(); cpuInsBVS(); break;
-            // CLC
-            case 0x18: myCpu->cycles = 2; cpuIMPAddMod(); cpuInsCLC(); break;
-            // CLD
-            case 0xD8: myCpu->cycles = 2; cpuIMPAddMod(); cpuInsCLD(); break;
-            // CLI
-            case 0x58: myCpu->cycles = 2; cpuIMPAddMod(); cpuInsCLI(); break;
-            // CLV
-            case 0xB8: myCpu->cycles = 2; cpuIMPAddMod(); cpuInsCLV(); break;
-            // CMP
-            case 0xC9: myCpu->cycles = 2; cpuIMMAddMod(); cpuInsCMP(); break;
-            case 0xC5: myCpu->cycles = 3; cpuZP0AddMod(); cpuInsCMP(); break;
-            case 0xD5: myCpu->cycles = 4; cpuZPXAddMod(); cpuInsCMP(); break;
-            case 0xCD: myCpu->cycles = 4; cpuABSAddMod(); cpuInsCMP(); break;
-            case 0xDD: myCpu->cycles = 4; cpuABXAddMod(); cpuInsCMP(); break;
-            case 0xD9: myCpu->cycles = 4; cpuABYAddMod(); cpuInsCMP(); break;
-            case 0xC1: myCpu->cycles = 6; cpuIZXAddMod(); cpuInsCMP(); break;
-            case 0xD1: myCpu->cycles = 5; cpuIZYAddMod(); cpuInsCMP(); break;
-            // CPX
-            case 0xE0: myCpu->cycles = 2; cpuIMMAddMod(); cpuInsCPX(); break;
-            case 0xE4: myCpu->cycles = 3; cpuZP0AddMod(); cpuInsCPX(); break;
-            case 0xEC: myCpu->cycles = 4; cpuABSAddMod(); cpuInsCPX(); break;
+        // run instruction
 
-
-
-
-
-            default: break;
-        }
         cpuSetStaFlag(myCpu->flag_U, true);
         myCpu->PgCount++;
     }
@@ -408,6 +354,10 @@ void cpuExecute() {
 
 
 // instructions:
+
+void cpuInsXXX(){
+    return;
+}
 
 void cpuInsADC() {
     // This instruction adds the contents of a memory location to the accumulator
