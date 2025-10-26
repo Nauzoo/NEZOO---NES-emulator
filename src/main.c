@@ -1,4 +1,4 @@
-#include <ncurses.h>
+
 #include <stdbool.h>
 #include <stdio.h>
 #include "nz6502.h"

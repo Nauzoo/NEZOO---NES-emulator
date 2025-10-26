@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "sizebits.h": "c",
+        "nzbus.h": "c",
+        "stdbool.h": "c",
+        "stdio.h": "c"
+    }
+}

@@ -8,7 +8,7 @@ CPU * myCpu;
 bool lIMP;
 
 
-InstructionSet lookup[16][16] = 
+InstructionSet lookup[256] = 
 	{
         { "BRK\0", &cpuInsBRK, &cpuIMMAddMod, 7 },{ "ORA\0", &cpuInsORA, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 3 },{ "ORA\0", &cpuInsORA, &cpuZP0AddMod, 3 },{ "ASL\0", &cpuInsASL, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "PHP\0", &cpuInsPHP, &cpuIMPAddMod, 3 },{ "ORA\0", &cpuInsORA, &cpuIMMAddMod, 2 },{ "ASL\0", &cpuInsASL, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ORA\0", &cpuInsORA, &cpuABSAddMod, 4 },{ "ASL\0", &cpuInsASL, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
         { "BPL\0", &cpuInsBPL, &cpuRELAddMod, 2 },{ "ORA\0", &cpuInsORA, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ORA\0", &cpuInsORA, &cpuZPXAddMod, 4 },{ "ASL\0", &cpuInsASL, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "CLC\0", &cpuInsCLC, &cpuIMPAddMod, 2 },{ "ORA\0", &cpuInsORA, &cpuABYAddMod, 4 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ORA\0", &cpuInsORA, &cpuABXAddMod, 4 },{ "ASL\0", &cpuInsASL, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
