@@ -1,15 +1,22 @@
+#ifndef NZ6502_H
+#define  NZ6502_H
+
 #include "sizebits.h"
 #include "nzBUS.h"
 #include <stdbool.h>
 
-typedef struct InstructionSet {
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct Instruction {
 
     char* name;
     void (*instruction)();
     void (*addrMode)();
     uint8_t cycles;
 
-} InstructionSet;
+} Instruction;
 
 typedef struct CPU {
 
@@ -61,8 +68,8 @@ Byte cpuRead(Word address, bool isReadOnly);
 /** fetches the next instruction pointed by the Program counter */
 Byte cpuFetch();
 
-/** executes a code, need to add the code to the memory 1st **/
-void cpuExecute();
+/** executes an instruction, adding the code to the memory is needed **/
+void cpuClock();
 
 /** checks if a certain status register flag is activated */
 Byte cpuIsActiveFlag(Byte flag);
@@ -298,3 +305,8 @@ void cpuInsTXS();
 
 /** instruction: Copies the current contents of the Y register into the accumulator and sets the zero and negative flags as appropriate.**/
 void cpuInsTYA();
+
+#ifdef __cplusplus
+}
+#endif
+#endif

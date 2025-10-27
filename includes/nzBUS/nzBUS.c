@@ -13,4 +13,3 @@ Byte busRead(struct BUS * bus, Word address, bool isReadOnly) {
         return bus->RAM[address];
     return 0x00;
 }
-

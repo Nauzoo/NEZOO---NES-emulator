@@ -1,10 +1,15 @@
+#ifndef NZBUS_H
+#define NZBUS_H
+
 #include <stdbool.h>
 #include "sizebits.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define RAM_SIZE 65536
 
-#ifndef NZBUS_H
-#define NZBUS_H
 typedef struct BUS {
 
     // Devices:
@@ -20,5 +25,9 @@ void busWrite(BUS * bus, Word address, Byte data);
 /** reads an 8 bit piece of data from the consoles RAM */
 Byte busRead(BUS * bus, Word address, bool isReadOnly);
 
+
+#ifdef __cplusplus
+}
 #endif
 
+#endif

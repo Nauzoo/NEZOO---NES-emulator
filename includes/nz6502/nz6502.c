@@ -5,10 +5,9 @@
 
 BUS * myBus;
 CPU * myCpu;
-bool lIMP;
 
 
-InstructionSet lookup[256] = 
+Instruction lookup[256] = 
 	{
         { "BRK\0", &cpuInsBRK, &cpuIMMAddMod, 7 },{ "ORA\0", &cpuInsORA, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 3 },{ "ORA\0", &cpuInsORA, &cpuZP0AddMod, 3 },{ "ASL\0", &cpuInsASL, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "PHP\0", &cpuInsPHP, &cpuIMPAddMod, 3 },{ "ORA\0", &cpuInsORA, &cpuIMMAddMod, 2 },{ "ASL\0", &cpuInsASL, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ORA\0", &cpuInsORA, &cpuABSAddMod, 4 },{ "ASL\0", &cpuInsASL, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
         { "BPL\0", &cpuInsBPL, &cpuRELAddMod, 2 },{ "ORA\0", &cpuInsORA, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ORA\0", &cpuInsORA, &cpuZPXAddMod, 4 },{ "ASL\0", &cpuInsASL, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "CLC\0", &cpuInsCLC, &cpuIMPAddMod, 2 },{ "ORA\0", &cpuInsORA, &cpuABYAddMod, 4 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ORA\0", &cpuInsORA, &cpuABXAddMod, 4 },{ "ASL\0", &cpuInsASL, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
@@ -56,7 +55,6 @@ void cpuCreate(CPU *cpu) {
     myCpu->opcode = 0x00;
     myCpu->cycles = 0;
 
-    lIMP = false;
 }
 
 
@@ -77,7 +75,7 @@ Byte cpuRead(Word address, bool isReadOnly){
 
 // gets the next instruction pointed by the program counter
 Byte cpuFetch(){
-    if (!lIMP) {
+    if (!(lookup[myCpu->opcode].addrMode == &cpuIMPAddMod)) {
         myCpu->fetched = cpuRead(myCpu->abs_address, false);
     }
     return myCpu->fetched;
@@ -197,13 +195,11 @@ void cpuNonMaskInt() {
 
 void cpuIMPAddMod() {
     myCpu->fetched = myCpu->A;
-    lIMP = true;
 }
 
 void cpuIMMAddMod() {
     myCpu->PgCount++;
     myCpu->abs_address = myCpu->PgCount;
-    lIMP = false;
 }
 
 void cpuZP0AddMod() {
@@ -212,8 +208,6 @@ void cpuZP0AddMod() {
 
     // gets the current program counter value and masks with:
     myCpu->abs_address &= 0x00FF;
-
-    lIMP = false;
 }
 
 void cpuZPXAddMod() {
@@ -222,8 +216,6 @@ void cpuZPXAddMod() {
 
     // gets the current program counter value and masks with:
     myCpu->abs_address &= 0x00FF;
-
-    lIMP = false;
 }
 
 void cpuZPYAddMod() {
@@ -232,8 +224,6 @@ void cpuZPYAddMod() {
 
     // gets the current program counter value and masks with:
     myCpu->abs_address &= 0x00FF;
-
-    lIMP = false;
 }
 
 
@@ -244,8 +234,6 @@ void cpuABSAddMod(){
     myCpu->PgCount++;
 
     myCpu->abs_address = (higByte << 8) | lowByte;
-
-    lIMP = false;
 }
 
 void cpuABXAddMod(){
@@ -260,8 +248,6 @@ void cpuABXAddMod(){
     if ((myCpu->abs_address & 0xFF00) != higByte << 8){
         myCpu->cycles += 1;
     } // possible else -> cycles += 0
-
-    lIMP = false;
 }
 
 void cpuABYAddMod(){
@@ -276,8 +262,6 @@ void cpuABYAddMod(){
     if ((myCpu->abs_address & 0xFF00) != (higByte << 8)) {
 		myCpu->cycles += 1;
     } // possible else ->cycles += 0
-
-    lIMP = false;
 }
 
 void cpuINDAddMod(){
@@ -294,8 +278,6 @@ void cpuINDAddMod(){
     } else {
         myCpu->abs_address = (cpuRead(pointer + 1, false) << 8) | cpuRead(pointer, false);
     }
-
-    lIMP = false;
 }
 
 void cpuIZXAddMod() {
@@ -307,8 +289,6 @@ void cpuIZXAddMod() {
     Word higByte = cpuRead((add + Xadd + 1) & 0x00FF, false);
 
     myCpu->abs_address = (higByte << 8) | lowByte;
-
-    lIMP = false;
 }
 
 void cpuIZYAddMod() {
@@ -324,8 +304,6 @@ void cpuIZYAddMod() {
     if ((myCpu->abs_address & 0xFF00) != higByte << 8){
         myCpu->cycles += 1;
     } // possible else -> cycles += 0;
-
-    lIMP = false;
 }
 
 void cpuRELAddMod() {
@@ -334,20 +312,24 @@ void cpuRELAddMod() {
     if (myCpu->rel_address & 0x80) {
         myCpu->rel_address |= 0xFF00;
     }
-
-    lIMP = false;
 }
 
-//  executes the code? I guess.
-void cpuExecute() {
+//  executes one instruction from the memory.
+void cpuClock() {
     if (myCpu->cycles == 0){
 
-        Byte opcode = cpuRead(myCpu->PgCount, false);
-
-        // run instruction
-
         cpuSetStaFlag(myCpu->flag_U, true);
+        
+        Byte opcode = cpuRead(myCpu->PgCount, false);
+        
+        myCpu->cycles = lookup[opcode].cycles;
+        
+        lookup[opcode].addrMode();      // Calls the instruction addr mode
+        lookup[opcode].instruction();   // Calls the instruction itself
+
+        
         myCpu->PgCount++;
+        cpuSetStaFlag(myCpu->flag_U, true);
     }
     myCpu->cycles--;
 }
@@ -415,7 +397,7 @@ void cpuInsASL() {
     cpuSetStaFlag(myCpu->flag_Z, (holder & 0x00FF) == 0x00);
     cpuSetStaFlag(myCpu->flag_N, holder & 0x80);
 
-    if(lIMP){
+    if(lookup[myCpu->opcode].addrMode == &cpuIMPAddMod){
         myCpu->A = holder & 0x00FF;
     } else {
         cpuWrite(myCpu->abs_address, holder & 0x00FF);
@@ -714,7 +696,7 @@ void cpuInsLSR() {
     cpuSetStaFlag(myCpu->flag_Z, (holder & 0x00FF) == 0x00);
     cpuSetStaFlag(myCpu->flag_N, holder & 0x80);
 
-    if(lIMP){
+    if(lookup[myCpu->opcode].addrMode == &cpuIMPAddMod){
         myCpu->A = holder & 0x00FF;
     } else {
         cpuWrite(myCpu->abs_address, holder & 0x00FF);
@@ -771,7 +753,7 @@ void cpuInsROL() {
     cpuSetStaFlag(myCpu->flag_Z, holder == 0);
     cpuSetStaFlag(myCpu->flag_N, holder & 0x80);
 
-    if (lIMP) {
+    if (lookup[myCpu->opcode].addrMode == &cpuIMPAddMod) {
         myCpu->A = holder;
     } else {
         cpuWrite(myCpu->abs_address, holder);
@@ -788,7 +770,7 @@ void cpuInsROR() {
     cpuSetStaFlag(myCpu->flag_Z, holder == 0);
     cpuSetStaFlag(myCpu->flag_N, holder & 0x80);
 
-    if (lIMP) {
+    if (lookup[myCpu->opcode].addrMode == &cpuIMPAddMod) {
         myCpu->A = holder;
     } else {
         cpuWrite(myCpu->abs_address, holder);
