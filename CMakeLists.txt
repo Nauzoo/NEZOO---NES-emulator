@@ -4,6 +4,7 @@ project(NESoo_Emulator LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:-Ofast;-DNDEBUG;-std=c++17>") # This sets -Ofast, -DNDEBUG, and -std=c++20 for C++ compilation.
 
 include(FetchContent)
 
@@ -14,13 +15,6 @@ FetchContent_Declare(
     GIT_TAG 3.4
 )
 FetchContent_MakeAvailable(glfw)
-
-# --- GLAD ---
-FetchContent_Declare(
-    glad
-    GIT_REPOSITORY https://github.com/Dav1dde/glad.git
-)
-FetchContent_MakeAvailable(glad)
 
 # --- ImGui ---
 FetchContent_Declare(
@@ -54,7 +48,7 @@ add_subdirectory(includes/nz6502)
 add_subdirectory(includes/nzBUS)
 
 # --- Executable ---
-add_executable(${PROJECT_NAME} src/main.c)
+add_executable(${PROJECT_NAME} src/main.cpp)
 
 find_package(OpenGL REQUIRED)
 
