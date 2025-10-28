@@ -61,6 +61,9 @@ void cpuCreate(CPU *cpu) {
 // set the bus pointer to the bus "instance"
 void cpuConBus(BUS * bus){
     myBus = bus;
+    for (int i = 0; i < RAM_SIZE; i++){
+        myBus->RAM[i] = 0x00;
+    }
 }
 
 // write the data from a specific stack location

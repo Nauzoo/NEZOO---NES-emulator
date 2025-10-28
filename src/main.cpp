@@ -11,76 +11,89 @@
 #include "imgui_impl_opengl3.h"
 
 #include "NESoo_GUI/NESoo_GUI.hpp"
+#include "memory_editor.h"
 
-class MyGUI : public GUI 
+class MyGUI : public GUI<MyGUI>
 {   
     public:
     MyGUI() = default;
     ~MyGUI() = default;
 
-    virtual void SetUp() final
+    void SetUp()
     {
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
         // ImGui::StyleColorsLight();
     }
-
-    virtual void Update() final 
+    
+    void Update() 
     {
-        // 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-        if (show_demo_window)
-            ImGui::ShowDemoWindow(&show_demo_window);
+        mem_editor.DrawWindow("Memory Editor",
+                              (unsigned char *)busDebug->RAM,
+                              sizeof(Byte) * 64 * 1024,
+                              0x0000);
 
-        // 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
-        {
-            static float f = 0.0f;
-            static int counter = 0;
+        ImGui::Begin("Registers");
+        
+        ImGui::Text("STATUS FLAGS :");
+        ImGui::TextColored(cpuIsActiveFlag(cpuDebug->flag_C) 
+                ? enabled_color : disabled_color, "C"); ImGui::SameLine(1 * 20 + 4);
+        ImGui::TextColored(cpuIsActiveFlag(cpuDebug->flag_Z)
+                ? enabled_color : disabled_color, "Z"); ImGui::SameLine(2 * 20);
+        ImGui::TextColored(cpuIsActiveFlag(cpuDebug->flag_I) 
+                ? enabled_color : disabled_color, "I"); ImGui::SameLine(3 * 20);
+        ImGui::TextColored(cpuIsActiveFlag(cpuDebug->flag_D)
+                ? enabled_color : disabled_color, "D"); ImGui::SameLine(4 * 20);
+        ImGui::TextColored(cpuIsActiveFlag(cpuDebug->flag_B)
+                ? enabled_color : disabled_color, "B"); ImGui::SameLine(5 * 20);
+        ImGui::TextColored(cpuIsActiveFlag(cpuDebug->flag_U) 
+                ? enabled_color : disabled_color, "~"); ImGui::SameLine(6 * 20);
+        ImGui::TextColored(cpuIsActiveFlag(cpuDebug->flag_V)
+                ? enabled_color : disabled_color, "V"); ImGui::SameLine(7 * 20);
+        ImGui::TextColored(cpuIsActiveFlag(cpuDebug->flag_N)
+                ? enabled_color : disabled_color, "N");
 
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+        ImGui::Separator();
+        ImGui::Text("DATA REGISTERS :");
 
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
+        cpuDebug->A =  InputHex8("A", cpuDebug->A); ImGui::SameLine(1 * 48 + 4);
+        cpuDebug->X =  InputHex8("X", cpuDebug->X); ImGui::SameLine(2 * 48);
+        cpuDebug->Y =  InputHex8("Y", cpuDebug->Y); //ImGui::SameLine(3 * 48);
+        cpuDebug->PgCount = InputHex16("PC", cpuDebug->PgCount);
+        cpuDebug->StkPtr = InputHex8("Stack P.", cpuDebug->StkPtr); //ImGui::SameLine(4 * 48 + 40);
+        ImGui::End();
 
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
-
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            ImGui::End();
-        }
-
-        // 3. Show another simple window.
-        if (show_another_window)
-        {
-            ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-            ImGui::Text("Hello from another window!");
-            if (ImGui::Button("Close Me"))
-                show_another_window = false;
-            ImGui::End();
-        }
     }
 
+    void connectCpu(CPU* cpu){
+        cpuDebug = cpu;
+    }
+
+    void connectBus(BUS* bus){
+        busDebug = bus;
+    }
     private:
-    bool show_demo_window = true;
-    bool show_another_window = false;
+    CPU* cpuDebug;
+    BUS* busDebug;
+    MemoryEditor mem_editor;
+    
 };
 int main(int argc, char *argv[])
 {
-    MyGUI myGUI;
-    myGUI.Run();
-
     CPU newCpu;
     BUS newBus;
-
+    
     cpuCreate(&newCpu);
     cpuConBus(&newBus);
-
     cpuReset();
+    
+    cpuWrite(0x00, 0x78);
+    cpuSetStaFlag(newCpu.flag_B, true);
+
+    MyGUI myGUI;
+    myGUI.connectBus(&newBus);
+    myGUI.connectCpu(&newCpu);
+    myGUI.Run();
 
     return 0;
 }
