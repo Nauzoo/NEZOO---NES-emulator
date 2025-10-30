@@ -1,31 +1,33 @@
 #include "nzBUS.h"
 #include "sizebits.h"
 #include <stdbool.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include "nz6502.h"
 
 BUS * myBus;
 CPU * myCpu;
 
-
 Instruction lookup[256] = 
-	{
-        { "BRK\0", &cpuInsBRK, &cpuIMMAddMod, 7 },{ "ORA\0", &cpuInsORA, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 3 },{ "ORA\0", &cpuInsORA, &cpuZP0AddMod, 3 },{ "ASL\0", &cpuInsASL, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "PHP\0", &cpuInsPHP, &cpuIMPAddMod, 3 },{ "ORA\0", &cpuInsORA, &cpuIMMAddMod, 2 },{ "ASL\0", &cpuInsASL, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ORA\0", &cpuInsORA, &cpuABSAddMod, 4 },{ "ASL\0", &cpuInsASL, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
-        { "BPL\0", &cpuInsBPL, &cpuRELAddMod, 2 },{ "ORA\0", &cpuInsORA, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ORA\0", &cpuInsORA, &cpuZPXAddMod, 4 },{ "ASL\0", &cpuInsASL, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "CLC\0", &cpuInsCLC, &cpuIMPAddMod, 2 },{ "ORA\0", &cpuInsORA, &cpuABYAddMod, 4 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ORA\0", &cpuInsORA, &cpuABXAddMod, 4 },{ "ASL\0", &cpuInsASL, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
-        { "JSR\0", &cpuInsJSR, &cpuABSAddMod, 6 },{ "AND\0", &cpuInsAND, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "BIT\0", &cpuInsBIT, &cpuZP0AddMod, 3 },{ "AND\0", &cpuInsAND, &cpuZP0AddMod, 3 },{ "ROL\0", &cpuInsROL, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "PLP\0", &cpuInsPLP, &cpuIMPAddMod, 4 },{ "AND\0", &cpuInsAND, &cpuIMMAddMod, 2 },{ "ROL\0", &cpuInsROL, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "BIT\0", &cpuInsBIT, &cpuABSAddMod, 4 },{ "AND\0", &cpuInsAND, &cpuABSAddMod, 4 },{ "ROL\0", &cpuInsROL, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
-        { "BMI\0", &cpuInsBMI, &cpuRELAddMod, 2 },{ "AND\0", &cpuInsAND, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "AND\0", &cpuInsAND, &cpuZPXAddMod, 4 },{ "ROL\0", &cpuInsROL, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "SEC\0", &cpuInsSEC, &cpuIMPAddMod, 2 },{ "AND\0", &cpuInsAND, &cpuABYAddMod, 4 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "AND\0", &cpuInsAND, &cpuABXAddMod, 4 },{ "ROL\0", &cpuInsROL, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
-        { "RTI\0", &cpuInsRTI, &cpuIMPAddMod, 6 },{ "EOR\0", &cpuInsEOR, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 3 },{ "EOR\0", &cpuInsEOR, &cpuZP0AddMod, 3 },{ "LSR\0", &cpuInsLSR, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "PHA\0", &cpuInsPHA, &cpuIMPAddMod, 3 },{ "EOR\0", &cpuInsEOR, &cpuIMMAddMod, 2 },{ "LSR\0", &cpuInsLSR, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "JMP\0", &cpuInsJMP, &cpuABSAddMod, 3 },{ "EOR\0", &cpuInsEOR, &cpuABSAddMod, 4 },{ "LSR\0", &cpuInsLSR, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
-        { "BVC\0", &cpuInsBVC, &cpuRELAddMod, 2 },{ "EOR\0", &cpuInsEOR, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "EOR\0", &cpuInsEOR, &cpuZPXAddMod, 4 },{ "LSR\0", &cpuInsLSR, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "CLI\0", &cpuInsCLI, &cpuIMPAddMod, 2 },{ "EOR\0", &cpuInsEOR, &cpuABYAddMod, 4 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "EOR\0", &cpuInsEOR, &cpuABXAddMod, 4 },{ "LSR\0", &cpuInsLSR, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
-        { "RTS\0", &cpuInsRTS, &cpuIMPAddMod, 6 },{ "ADC\0", &cpuInsADC, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 3 },{ "ADC\0", &cpuInsADC, &cpuZP0AddMod, 3 },{ "ROR\0", &cpuInsROR, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "PLA\0", &cpuInsPLA, &cpuIMPAddMod, 4 },{ "ADC\0", &cpuInsADC, &cpuIMMAddMod, 2 },{ "ROR\0", &cpuInsROR, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "JMP\0", &cpuInsJMP, &cpuINDAddMod, 5 },{ "ADC\0", &cpuInsADC, &cpuABSAddMod, 4 },{ "ROR\0", &cpuInsROR, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
-        { "BVS\0", &cpuInsBVS, &cpuRELAddMod, 2 },{ "ADC\0", &cpuInsADC, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ADC\0", &cpuInsADC, &cpuZPXAddMod, 4 },{ "ROR\0", &cpuInsROR, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "SEI\0", &cpuInsSEI, &cpuIMPAddMod, 2 },{ "ADC\0", &cpuInsADC, &cpuABYAddMod, 4 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ADC\0", &cpuInsADC, &cpuABXAddMod, 4 },{ "ROR\0", &cpuInsROR, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
-        { "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "STA\0", &cpuInsSTA, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "STY\0", &cpuInsSTY, &cpuZP0AddMod, 3 },{ "STA\0", &cpuInsSTA, &cpuZP0AddMod, 3 },{ "STX\0", &cpuInsSTX, &cpuZP0AddMod, 3 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 3 },{ "DEY\0", &cpuInsDEY, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "TXA\0", &cpuInsTXA, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "STY\0", &cpuInsSTY, &cpuABSAddMod, 4 },{ "STA\0", &cpuInsSTA, &cpuABSAddMod, 4 },{ "STX\0", &cpuInsSTX, &cpuABSAddMod, 4 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 4 },
-        { "BCC\0", &cpuInsBCC, &cpuRELAddMod, 2 },{ "STA\0", &cpuInsSTA, &cpuIZYAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "STY\0", &cpuInsSTY, &cpuZPXAddMod, 4 },{ "STA\0", &cpuInsSTA, &cpuZPXAddMod, 4 },{ "STX\0", &cpuInsSTX, &cpuZPYAddMod, 4 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 4 },{ "TYA\0", &cpuInsTYA, &cpuIMPAddMod, 2 },{ "STA\0", &cpuInsSTA, &cpuABYAddMod, 5 },{ "TXS\0", &cpuInsTXS, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 5 },{ "STA\0", &cpuInsSTA, &cpuABXAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },
-        { "LDY\0", &cpuInsLDY, &cpuIMMAddMod, 2 },{ "LDA\0", &cpuInsLDA, &cpuIZXAddMod, 6 },{ "LDX\0", &cpuInsLDX, &cpuIMMAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "LDY\0", &cpuInsLDY, &cpuZP0AddMod, 3 },{ "LDA\0", &cpuInsLDA, &cpuZP0AddMod, 3 },{ "LDX\0", &cpuInsLDX, &cpuZP0AddMod, 3 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 3 },{ "TAY\0", &cpuInsTAY, &cpuIMPAddMod, 2 },{ "LDA\0", &cpuInsLDA, &cpuIMMAddMod, 2 },{ "TAX\0", &cpuInsTAX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "LDY\0", &cpuInsLDY, &cpuABSAddMod, 4 },{ "LDA\0", &cpuInsLDA, &cpuABSAddMod, 4 },{ "LDX\0", &cpuInsLDX, &cpuABSAddMod, 4 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 4 },
-        { "BCS\0", &cpuInsBCS, &cpuRELAddMod, 2 },{ "LDA\0", &cpuInsLDA, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "LDY\0", &cpuInsLDY, &cpuZPXAddMod, 4 },{ "LDA\0", &cpuInsLDA, &cpuZPXAddMod, 4 },{ "LDX\0", &cpuInsLDX, &cpuZPYAddMod, 4 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 4 },{ "CLV\0", &cpuInsCLV, &cpuIMPAddMod, 2 },{ "LDA\0", &cpuInsLDA, &cpuABYAddMod, 4 },{ "TSX\0", &cpuInsTSX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 4 },{ "LDY\0", &cpuInsLDY, &cpuABXAddMod, 4 },{ "LDA\0", &cpuInsLDA, &cpuABXAddMod, 4 },{ "LDX\0", &cpuInsLDX, &cpuABYAddMod, 4 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 4 },
-        { "CPY\0", &cpuInsCPY, &cpuIMMAddMod, 2 },{ "CMP\0", &cpuInsCMP, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "CPY\0", &cpuInsCPY, &cpuZP0AddMod, 3 },{ "CMP\0", &cpuInsCMP, &cpuZP0AddMod, 3 },{ "DEC\0", &cpuInsDEC, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "INY\0", &cpuInsINY, &cpuIMPAddMod, 2 },{ "CMP\0", &cpuInsCMP, &cpuIMMAddMod, 2 },{ "DEX\0", &cpuInsDEX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "CPY\0", &cpuInsCPY, &cpuABSAddMod, 4 },{ "CMP\0", &cpuInsCMP, &cpuABSAddMod, 4 },{ "DEC\0", &cpuInsDEC, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
-        { "BNE\0", &cpuInsBNE, &cpuRELAddMod, 2 },{ "CMP\0", &cpuInsCMP, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "CMP\0", &cpuInsCMP, &cpuZPXAddMod, 4 },{ "DEC\0", &cpuInsDEC, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "CLD\0", &cpuInsCLD, &cpuIMPAddMod, 2 },{ "CMP\0", &cpuInsCMP, &cpuABYAddMod, 4 },{ "NOP\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "CMP\0", &cpuInsCMP, &cpuABXAddMod, 4 },{ "DEC\0", &cpuInsDEC, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
-        { "CPX\0", &cpuInsCPX, &cpuIMMAddMod, 2 },{ "SBC\0", &cpuInsSBC, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "CPX\0", &cpuInsCPX, &cpuZP0AddMod, 3 },{ "SBC\0", &cpuInsSBC, &cpuZP0AddMod, 3 },{ "INC\0", &cpuInsINC, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "INX\0", &cpuInsINX, &cpuIMPAddMod, 2 },{ "SBC\0", &cpuInsSBC, &cpuIMMAddMod, 2 },{ "NOP\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsSBC, &cpuIMPAddMod, 2 },{ "CPX\0", &cpuInsCPX, &cpuABSAddMod, 4 },{ "SBC\0", &cpuInsSBC, &cpuABSAddMod, 4 },{ "INC\0", &cpuInsINC, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
-        { "BEQ\0", &cpuInsBEQ, &cpuRELAddMod, 2 },{ "SBC\0", &cpuInsSBC, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "SBC\0", &cpuInsSBC, &cpuZPXAddMod, 4 },{ "INC\0", &cpuInsINC, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "SED\0", &cpuInsSED, &cpuIMPAddMod, 2 },{ "SBC\0", &cpuInsSBC, &cpuABYAddMod, 4 },{ "NOP\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "SBC\0", &cpuInsSBC, &cpuABXAddMod, 4 },{ "INC\0", &cpuInsINC, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
-    };
+{
+    { "BRK\0", &cpuInsBRK, &cpuIMMAddMod, 7 },{ "ORA\0", &cpuInsORA, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 3 },{ "ORA\0", &cpuInsORA, &cpuZP0AddMod, 3 },{ "ASL\0", &cpuInsASL, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "PHP\0", &cpuInsPHP, &cpuIMPAddMod, 3 },{ "ORA\0", &cpuInsORA, &cpuIMMAddMod, 2 },{ "ASL\0", &cpuInsASL, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ORA\0", &cpuInsORA, &cpuABSAddMod, 4 },{ "ASL\0", &cpuInsASL, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
+    { "BPL\0", &cpuInsBPL, &cpuRELAddMod, 2 },{ "ORA\0", &cpuInsORA, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ORA\0", &cpuInsORA, &cpuZPXAddMod, 4 },{ "ASL\0", &cpuInsASL, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "CLC\0", &cpuInsCLC, &cpuIMPAddMod, 2 },{ "ORA\0", &cpuInsORA, &cpuABYAddMod, 4 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ORA\0", &cpuInsORA, &cpuABXAddMod, 4 },{ "ASL\0", &cpuInsASL, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
+    { "JSR\0", &cpuInsJSR, &cpuABSAddMod, 6 },{ "AND\0", &cpuInsAND, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "BIT\0", &cpuInsBIT, &cpuZP0AddMod, 3 },{ "AND\0", &cpuInsAND, &cpuZP0AddMod, 3 },{ "ROL\0", &cpuInsROL, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "PLP\0", &cpuInsPLP, &cpuIMPAddMod, 4 },{ "AND\0", &cpuInsAND, &cpuIMMAddMod, 2 },{ "ROL\0", &cpuInsROL, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "BIT\0", &cpuInsBIT, &cpuABSAddMod, 4 },{ "AND\0", &cpuInsAND, &cpuABSAddMod, 4 },{ "ROL\0", &cpuInsROL, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
+    { "BMI\0", &cpuInsBMI, &cpuRELAddMod, 2 },{ "AND\0", &cpuInsAND, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "AND\0", &cpuInsAND, &cpuZPXAddMod, 4 },{ "ROL\0", &cpuInsROL, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "SEC\0", &cpuInsSEC, &cpuIMPAddMod, 2 },{ "AND\0", &cpuInsAND, &cpuABYAddMod, 4 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "AND\0", &cpuInsAND, &cpuABXAddMod, 4 },{ "ROL\0", &cpuInsROL, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
+    { "RTI\0", &cpuInsRTI, &cpuIMPAddMod, 6 },{ "EOR\0", &cpuInsEOR, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 3 },{ "EOR\0", &cpuInsEOR, &cpuZP0AddMod, 3 },{ "LSR\0", &cpuInsLSR, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "PHA\0", &cpuInsPHA, &cpuIMPAddMod, 3 },{ "EOR\0", &cpuInsEOR, &cpuIMMAddMod, 2 },{ "LSR\0", &cpuInsLSR, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "JMP\0", &cpuInsJMP, &cpuABSAddMod, 3 },{ "EOR\0", &cpuInsEOR, &cpuABSAddMod, 4 },{ "LSR\0", &cpuInsLSR, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
+    { "BVC\0", &cpuInsBVC, &cpuRELAddMod, 2 },{ "EOR\0", &cpuInsEOR, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "EOR\0", &cpuInsEOR, &cpuZPXAddMod, 4 },{ "LSR\0", &cpuInsLSR, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "CLI\0", &cpuInsCLI, &cpuIMPAddMod, 2 },{ "EOR\0", &cpuInsEOR, &cpuABYAddMod, 4 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "EOR\0", &cpuInsEOR, &cpuABXAddMod, 4 },{ "LSR\0", &cpuInsLSR, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
+    { "RTS\0", &cpuInsRTS, &cpuIMPAddMod, 6 },{ "ADC\0", &cpuInsADC, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 3 },{ "ADC\0", &cpuInsADC, &cpuZP0AddMod, 3 },{ "ROR\0", &cpuInsROR, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "PLA\0", &cpuInsPLA, &cpuIMPAddMod, 4 },{ "ADC\0", &cpuInsADC, &cpuIMMAddMod, 2 },{ "ROR\0", &cpuInsROR, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "JMP\0", &cpuInsJMP, &cpuINDAddMod, 5 },{ "ADC\0", &cpuInsADC, &cpuABSAddMod, 4 },{ "ROR\0", &cpuInsROR, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
+    { "BVS\0", &cpuInsBVS, &cpuRELAddMod, 2 },{ "ADC\0", &cpuInsADC, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ADC\0", &cpuInsADC, &cpuZPXAddMod, 4 },{ "ROR\0", &cpuInsROR, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "SEI\0", &cpuInsSEI, &cpuIMPAddMod, 2 },{ "ADC\0", &cpuInsADC, &cpuABYAddMod, 4 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "ADC\0", &cpuInsADC, &cpuABXAddMod, 4 },{ "ROR\0", &cpuInsROR, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
+    { "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "STA\0", &cpuInsSTA, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "STY\0", &cpuInsSTY, &cpuZP0AddMod, 3 },{ "STA\0", &cpuInsSTA, &cpuZP0AddMod, 3 },{ "STX\0", &cpuInsSTX, &cpuZP0AddMod, 3 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 3 },{ "DEY\0", &cpuInsDEY, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "TXA\0", &cpuInsTXA, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "STY\0", &cpuInsSTY, &cpuABSAddMod, 4 },{ "STA\0", &cpuInsSTA, &cpuABSAddMod, 4 },{ "STX\0", &cpuInsSTX, &cpuABSAddMod, 4 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 4 },
+    { "BCC\0", &cpuInsBCC, &cpuRELAddMod, 2 },{ "STA\0", &cpuInsSTA, &cpuIZYAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "STY\0", &cpuInsSTY, &cpuZPXAddMod, 4 },{ "STA\0", &cpuInsSTA, &cpuZPXAddMod, 4 },{ "STX\0", &cpuInsSTX, &cpuZPYAddMod, 4 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 4 },{ "TYA\0", &cpuInsTYA, &cpuIMPAddMod, 2 },{ "STA\0", &cpuInsSTA, &cpuABYAddMod, 5 },{ "TXS\0", &cpuInsTXS, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 5 },{ "STA\0", &cpuInsSTA, &cpuABXAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },
+    { "LDY\0", &cpuInsLDY, &cpuIMMAddMod, 2 },{ "LDA\0", &cpuInsLDA, &cpuIZXAddMod, 6 },{ "LDX\0", &cpuInsLDX, &cpuIMMAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "LDY\0", &cpuInsLDY, &cpuZP0AddMod, 3 },{ "LDA\0", &cpuInsLDA, &cpuZP0AddMod, 3 },{ "LDX\0", &cpuInsLDX, &cpuZP0AddMod, 3 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 3 },{ "TAY\0", &cpuInsTAY, &cpuIMPAddMod, 2 },{ "LDA\0", &cpuInsLDA, &cpuIMMAddMod, 2 },{ "TAX\0", &cpuInsTAX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "LDY\0", &cpuInsLDY, &cpuABSAddMod, 4 },{ "LDA\0", &cpuInsLDA, &cpuABSAddMod, 4 },{ "LDX\0", &cpuInsLDX, &cpuABSAddMod, 4 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 4 },
+    { "BCS\0", &cpuInsBCS, &cpuRELAddMod, 2 },{ "LDA\0", &cpuInsLDA, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "LDY\0", &cpuInsLDY, &cpuZPXAddMod, 4 },{ "LDA\0", &cpuInsLDA, &cpuZPXAddMod, 4 },{ "LDX\0", &cpuInsLDX, &cpuZPYAddMod, 4 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 4 },{ "CLV\0", &cpuInsCLV, &cpuIMPAddMod, 2 },{ "LDA\0", &cpuInsLDA, &cpuABYAddMod, 4 },{ "TSX\0", &cpuInsTSX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 4 },{ "LDY\0", &cpuInsLDY, &cpuABXAddMod, 4 },{ "LDA\0", &cpuInsLDA, &cpuABXAddMod, 4 },{ "LDX\0", &cpuInsLDX, &cpuABYAddMod, 4 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 4 },
+    { "CPY\0", &cpuInsCPY, &cpuIMMAddMod, 2 },{ "CMP\0", &cpuInsCMP, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "CPY\0", &cpuInsCPY, &cpuZP0AddMod, 3 },{ "CMP\0", &cpuInsCMP, &cpuZP0AddMod, 3 },{ "DEC\0", &cpuInsDEC, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "INY\0", &cpuInsINY, &cpuIMPAddMod, 2 },{ "CMP\0", &cpuInsCMP, &cpuIMMAddMod, 2 },{ "DEX\0", &cpuInsDEX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "CPY\0", &cpuInsCPY, &cpuABSAddMod, 4 },{ "CMP\0", &cpuInsCMP, &cpuABSAddMod, 4 },{ "DEC\0", &cpuInsDEC, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
+    { "BNE\0", &cpuInsBNE, &cpuRELAddMod, 2 },{ "CMP\0", &cpuInsCMP, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "CMP\0", &cpuInsCMP, &cpuZPXAddMod, 4 },{ "DEC\0", &cpuInsDEC, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "CLD\0", &cpuInsCLD, &cpuIMPAddMod, 2 },{ "CMP\0", &cpuInsCMP, &cpuABYAddMod, 4 },{ "NOP\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "CMP\0", &cpuInsCMP, &cpuABXAddMod, 4 },{ "DEC\0", &cpuInsDEC, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
+    { "CPX\0", &cpuInsCPX, &cpuIMMAddMod, 2 },{ "SBC\0", &cpuInsSBC, &cpuIZXAddMod, 6 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "CPX\0", &cpuInsCPX, &cpuZP0AddMod, 3 },{ "SBC\0", &cpuInsSBC, &cpuZP0AddMod, 3 },{ "INC\0", &cpuInsINC, &cpuZP0AddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 5 },{ "INX\0", &cpuInsINX, &cpuIMPAddMod, 2 },{ "SBC\0", &cpuInsSBC, &cpuIMMAddMod, 2 },{ "NOP\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsSBC, &cpuIMPAddMod, 2 },{ "CPX\0", &cpuInsCPX, &cpuABSAddMod, 4 },{ "SBC\0", &cpuInsSBC, &cpuABSAddMod, 4 },{ "INC\0", &cpuInsINC, &cpuABSAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },
+    { "BEQ\0", &cpuInsBEQ, &cpuRELAddMod, 2 },{ "SBC\0", &cpuInsSBC, &cpuIZYAddMod, 5 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 8 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "SBC\0", &cpuInsSBC, &cpuZPXAddMod, 4 },{ "INC\0", &cpuInsINC, &cpuZPXAddMod, 6 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 6 },{ "SED\0", &cpuInsSED, &cpuIMPAddMod, 2 },{ "SBC\0", &cpuInsSBC, &cpuABYAddMod, 4 },{ "NOP\0", &cpuInsNOP, &cpuIMPAddMod, 2 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },{ "???\0", &cpuInsNOP, &cpuIMPAddMod, 4 },{ "SBC\0", &cpuInsSBC, &cpuABXAddMod, 4 },{ "INC\0", &cpuInsINC, &cpuABXAddMod, 7 },{ "???\0", &cpuInsXXX, &cpuIMPAddMod, 7 },
+};
 
 
 void cpuCreate(CPU *cpu) {
@@ -84,10 +86,8 @@ Byte cpuFetch(){
     return myCpu->fetched;
 }
 
-
-
 // returns one if a flag is active
-Byte cpuIsActiveFlag(Byte flag) {
+Byte cpuIsFlagActive(Byte flag) {
     return (myCpu->StaReg & flag) > 0 ? 1 : 0;
 }
 
@@ -98,6 +98,118 @@ void cpuSetStaFlag(Byte flag, bool value) {
         myCpu->StaReg &= ~flag;
     }
 }
+
+InstructionList* cupDisassemble(Word initAddr, Word finalAddr){
+    
+    InstructionList* list = (InstructionList*)malloc(sizeof(InstructionList));
+    InstructionMap* codeList = (InstructionMap*)malloc(sizeof(InstructionMap));
+    
+    int index = 0;
+
+    const int dataArgumentSize = 8;
+    const int addrArgumentSize = 14;
+
+    for (int addr = initAddr; addr <= finalAddr; addr++){
+
+        Byte op = cpuRead(addr, true);
+        void (*addrMode)() = lookup[op].addrMode;
+
+        codeList[index].address = addr;
+        snprintf(codeList[index].addrString, 5, "%.4X", addr);
+        snprintf(codeList[index].opcode, 3, "%.2X", op);
+        snprintf(codeList[index].mneumonic, 4, "%s", lookup[op].name);
+
+        if (addrMode == &cpuIMPAddMod) {
+            snprintf(codeList[index].addrMode, 4, "IMP");
+            snprintf(codeList[index].data_argument, dataArgumentSize, "\0");
+            snprintf(codeList[index].address_argument, addrArgumentSize, "\0");
+        }
+        else if (addrMode == &cpuIMMAddMod) {
+            snprintf(codeList[index].addrMode, 4, "IMM"); 
+            addr++; Byte data_arg = cpuRead(addr, true);
+            snprintf(codeList[index].data_argument, dataArgumentSize, " $#%.2X", data_arg);
+            snprintf(codeList[index].address_argument, addrArgumentSize, "\0");
+        }
+        else if (addrMode == &cpuZP0AddMod) {
+            snprintf(codeList[index].addrMode, 4, "ZP0"); 
+            addr++; Byte addr_arg = cpuRead(addr, true);
+            snprintf(codeList[index].data_argument, dataArgumentSize, "\0");
+            snprintf(codeList[index].address_argument, addrArgumentSize, "$%.2X", addr_arg);
+        }
+        else if (addrMode == &cpuZPXAddMod) {
+            snprintf(codeList[index].addrMode, 4, "ZPX"); 
+            addr++; Byte addr_arg = cpuRead(addr, true);
+            snprintf(codeList[index].data_argument, dataArgumentSize, "\0");
+            snprintf(codeList[index].address_argument, addrArgumentSize, "$%.2X, X", addr_arg);
+        }
+        else if (addrMode == &cpuZPYAddMod) {
+            snprintf(codeList[index].addrMode, 4, "ZPY"); 
+            addr++; Byte addr_arg = cpuRead(addr, true);
+            snprintf(codeList[index].data_argument, dataArgumentSize, "\0");
+            snprintf(codeList[index].address_argument, addrArgumentSize, "$%.2X, Y", addr_arg);
+        }
+        else if (addrMode == &cpuIZXAddMod) {
+            snprintf(codeList[index].addrMode, 4, "IZX"); 
+            addr++; Byte addr_arg = cpuRead(addr, true);
+            snprintf(codeList[index].data_argument, dataArgumentSize, "\0");
+            snprintf(codeList[index].address_argument, addrArgumentSize, "($%.2X, X)", addr_arg);
+        }
+        else if (addrMode == &cpuIZYAddMod) {
+            snprintf(codeList[index].addrMode, 4, "IZY"); 
+            addr++; Byte addr_arg = cpuRead(addr, true);
+            snprintf(codeList[index].data_argument, dataArgumentSize, "\0");
+            snprintf(codeList[index].address_argument, addrArgumentSize, "($%.2X, Y)", addr_arg);
+        }
+        else if (addrMode == &cpuABSAddMod) {
+            snprintf(codeList[index].addrMode, 4, "ABS"); 
+            addr++; Byte lo_addr_arg = cpuRead(addr, true); 
+            addr++; Byte hi_addr_arg = cpuRead(addr, true);
+            snprintf(codeList[index].data_argument, dataArgumentSize, "\0");
+            snprintf(codeList[index].address_argument, addrArgumentSize, "$%.4X", (Word)(hi_addr_arg << 8) | lo_addr_arg);
+        }
+        else if (addrMode == &cpuABXAddMod) {
+            snprintf(codeList[index].addrMode, 4, "ABX"); 
+            addr++; Byte lo_addr_arg = cpuRead(addr, true); 
+            addr++; Byte hi_addr_arg = cpuRead(addr, true);
+            snprintf(codeList[index].data_argument, dataArgumentSize, "\0");
+            snprintf(codeList[index].address_argument, addrArgumentSize, "$%.4X, X", (Word)(hi_addr_arg << 8) | lo_addr_arg);
+        }
+        else if (addrMode == &cpuABYAddMod) {
+            snprintf(codeList[index].addrMode, 4, "ABY"); 
+            addr++; Byte lo_addr_arg = cpuRead(addr, true); 
+            addr++; Byte hi_addr_arg = cpuRead(addr, true);
+            snprintf(codeList[index].data_argument, dataArgumentSize, "\0");
+            snprintf(codeList[index].address_argument, addrArgumentSize, "$%.4X, Y", (Word)(hi_addr_arg << 8) | lo_addr_arg);
+        }
+        else if (addrMode == &cpuINDAddMod) {
+            snprintf(codeList[index].addrMode, 4, "IND"); 
+            addr++; Byte lo_addr_arg = cpuRead(addr, true); 
+            addr++; Byte hi_addr_arg = cpuRead(addr, true);
+            snprintf(codeList[index].data_argument, dataArgumentSize, "\0");
+            snprintf(codeList[index].address_argument, addrArgumentSize, "($%.4X)", (Word)(hi_addr_arg << 8) | lo_addr_arg);
+        }
+        else if (addrMode == &cpuRELAddMod) {
+            snprintf(codeList[index].addrMode, 4, "REL"); 
+            addr++; Byte addr_arg = cpuRead(addr, true);
+            snprintf(codeList[index].data_argument, dataArgumentSize, "\0");
+            snprintf(codeList[index].address_argument, addrArgumentSize, "$%.2X [$%.4X]", addr_arg, ((addr + addr_arg + 1)));
+        }
+
+        index++;
+
+        
+        if (addr != finalAddr)
+        {
+            codeList = (InstructionMap*)realloc(codeList, sizeof(InstructionMap)*(index + 1));
+        }
+        
+    }
+    list->list = codeList;
+    list->size = index;
+
+    return list;
+}
+
 
 void cpuReset() {
     // delete the data from the respective resgisters:
@@ -178,7 +290,7 @@ void _interrupt() {
 
 
 void cpuIntReq() {
-    if (~cpuIsActiveFlag(myCpu->flag_I)) {
+    if (~cpuIsFlagActive(myCpu->flag_I)) {
         _interrupt();
     }
 
@@ -352,7 +464,7 @@ void cpuInsADC() {
     // gets the value at the program counter location
     cpuFetch();
     // add the value to the accumulator toghter with the carry bits
-    Word buff = (Word)myCpu->A + (Word)myCpu->fetched + (Word)cpuIsActiveFlag(myCpu->flag_C);
+    Word buff = (Word)myCpu->A + (Word)myCpu->fetched + (Word)cpuIsFlagActive(myCpu->flag_C);
     // set the corresponding flags in case of:
     cpuSetStaFlag(myCpu->flag_C, buff > 255);           // CARRY
     cpuSetStaFlag(myCpu->flag_Z, (buff & 0x00FF) == 0); // ZERO
@@ -408,7 +520,7 @@ void cpuInsASL() {
 }
 
 void cpuInsBCC() {
-    if (~cpuIsActiveFlag(myCpu->flag_C)) {
+    if (~cpuIsFlagActive(myCpu->flag_C)) {
 
         myCpu->cycles++;
 
@@ -421,7 +533,7 @@ void cpuInsBCC() {
 }
 
 void cpuInsBCS() {
-    if (cpuIsActiveFlag(myCpu->flag_C)) {
+    if (cpuIsFlagActive(myCpu->flag_C)) {
 
         myCpu->cycles++;
 
@@ -435,7 +547,7 @@ void cpuInsBCS() {
 
 
 void cpuInsBEQ() {
-    if (cpuIsActiveFlag(myCpu->flag_Z)) {
+    if (cpuIsFlagActive(myCpu->flag_Z)) {
 
         myCpu->cycles++;
 
@@ -458,7 +570,7 @@ void cpuInsBIT() {
 }
 
 void cpuInsBMI() {
-    if (cpuIsActiveFlag(myCpu->flag_N)) {
+    if (cpuIsFlagActive(myCpu->flag_N)) {
 
         myCpu->cycles++;
 
@@ -471,7 +583,7 @@ void cpuInsBMI() {
 }
 
 void cpuInsBNE() {
-    if (~cpuIsActiveFlag(myCpu->flag_Z)) {
+    if (~cpuIsFlagActive(myCpu->flag_Z)) {
 
         myCpu->cycles++;
 
@@ -484,7 +596,7 @@ void cpuInsBNE() {
 }
 
 void cpuInsBPL() {
-    if (~cpuIsActiveFlag(myCpu->flag_N)) {
+    if (~cpuIsFlagActive(myCpu->flag_N)) {
 
         myCpu->cycles++;
 
@@ -502,7 +614,7 @@ void cpuInsBRK() {
 }
 
 void cpuInsBVC() {
-    if (~cpuIsActiveFlag(myCpu->flag_V)) {
+    if (~cpuIsFlagActive(myCpu->flag_V)) {
 
         myCpu->cycles++;
 
@@ -515,7 +627,7 @@ void cpuInsBVC() {
 }
 
 void cpuInsBVS() {
-    if (cpuIsActiveFlag(myCpu->flag_V)) {
+    if (cpuIsFlagActive(myCpu->flag_V)) {
 
         myCpu->cycles++;
 
@@ -750,7 +862,7 @@ void cpuInsROL() {
     cpuFetch();
 
     Byte holder = myCpu->fetched << 1;
-    holder |= (Byte)cpuIsActiveFlag(myCpu->flag_C);
+    holder |= (Byte)cpuIsFlagActive(myCpu->flag_C);
 
     cpuSetStaFlag(myCpu->flag_C, myCpu->fetched & 0x80);
     cpuSetStaFlag(myCpu->flag_Z, holder == 0);
@@ -767,7 +879,7 @@ void cpuInsROR() {
     cpuFetch();
 
     Byte holder = myCpu->fetched >> 1;
-    holder |= (Byte)cpuIsActiveFlag(myCpu->flag_C) << 7;
+    holder |= (Byte)cpuIsFlagActive(myCpu->flag_C) << 7;
 
     cpuSetStaFlag(myCpu->flag_C, myCpu->fetched & 0x01);
     cpuSetStaFlag(myCpu->flag_Z, holder == 0);
@@ -823,7 +935,7 @@ void cpuInsSBC() {
 
     Word flipFet = ((Word)myCpu->fetched) & 0x00FF; // get all the bits flipped
 
-    Word buff = (Word)myCpu->A + flipFet + (Word)cpuIsActiveFlag(myCpu->flag_C);
+    Word buff = (Word)myCpu->A + flipFet + (Word)cpuIsFlagActive(myCpu->flag_C);
 
     cpuSetStaFlag(myCpu->flag_C, buff & 0xFF00);
     cpuSetStaFlag(myCpu->flag_Z, (buff & 0xFF00) == 0);

@@ -18,21 +18,21 @@ class RegistersEditor {
         ImGui::Begin(title, &Open);
         
         ImGui::Text("STATUS FLAGS :");
-        ImGui::TextColored(cpuIsActiveFlag(cpu->flag_C) 
+        ImGui::TextColored(cpuIsFlagActive(cpu->flag_C) 
                 ? enabled_color : disabled_color, "C"); ImGui::SameLine(1 * 20 + 4);
-        ImGui::TextColored(cpuIsActiveFlag(cpu->flag_Z)
+        ImGui::TextColored(cpuIsFlagActive(cpu->flag_Z)
                 ? enabled_color : disabled_color, "Z"); ImGui::SameLine(2 * 20);
-        ImGui::TextColored(cpuIsActiveFlag(cpu->flag_I) 
+        ImGui::TextColored(cpuIsFlagActive(cpu->flag_I) 
                 ? enabled_color : disabled_color, "I"); ImGui::SameLine(3 * 20);
-        ImGui::TextColored(cpuIsActiveFlag(cpu->flag_D)
+        ImGui::TextColored(cpuIsFlagActive(cpu->flag_D)
                 ? enabled_color : disabled_color, "D"); ImGui::SameLine(4 * 20);
-        ImGui::TextColored(cpuIsActiveFlag(cpu->flag_B)
+        ImGui::TextColored(cpuIsFlagActive(cpu->flag_B)
                 ? enabled_color : disabled_color, "B"); ImGui::SameLine(5 * 20);
-        ImGui::TextColored(cpuIsActiveFlag(cpu->flag_U) 
+        ImGui::TextColored(cpuIsFlagActive(cpu->flag_U) 
                 ? enabled_color : disabled_color, "~"); ImGui::SameLine(6 * 20);
-        ImGui::TextColored(cpuIsActiveFlag(cpu->flag_V)
+        ImGui::TextColored(cpuIsFlagActive(cpu->flag_V)
                 ? enabled_color : disabled_color, "V"); ImGui::SameLine(7 * 20);
-        ImGui::TextColored(cpuIsActiveFlag(cpu->flag_N)
+        ImGui::TextColored(cpuIsFlagActive(cpu->flag_N)
                 ? enabled_color : disabled_color, "N");
 
         ImGui::Separator();

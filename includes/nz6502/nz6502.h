@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-typedef struct Instruction {
+typedef struct {
 
     char* name;
     void (*instruction)();
@@ -17,6 +17,26 @@ typedef struct Instruction {
     uint8_t cycles;
 
 } Instruction;
+
+typedef struct
+{
+    Word address;
+    // For printing to the disassembler:
+    char addrString[5];        // 00FF
+    char opcode[3];            // A0
+    char mneumonic[4];         // XXX
+    char addrMode[5];          // IMM
+    char data_argument[8];     // #$AB 
+    char address_argument[14]; // $FF [$FFFF]
+
+} InstructionMap;
+
+typedef struct
+{
+    int size;
+    InstructionMap* list;
+} InstructionList;
+
 
 typedef struct CPU {
 
@@ -72,11 +92,13 @@ Byte cpuFetch();
 void cpuClock();
 
 /** checks if a certain status register flag is activated */
-Byte cpuIsActiveFlag(Byte flag);
+Byte cpuIsFlagActive(Byte flag);
 
 /** sets a specific satus register flag to either 0 or 1 */
 void cpuSetStaFlag(Byte flag, bool value);
 
+/** Disassembles a region of memory into human readble code */
+InstructionList* cupDisassemble(Word initAddr, Word finalAddr);
 
 // Interrupt modes: stop the excecution of the code, finishing the current instruction first
 
