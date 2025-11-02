@@ -12,6 +12,8 @@
 #include "UI/UI_template.hpp"
 #include "UI/memory_editor.h"
 #include "UI/registers_editor.hpp"
+#include "UI/disassember.hpp"
+
 
 class MyGUI : public GUI<MyGUI>
 {   
@@ -23,7 +25,8 @@ class MyGUI : public GUI<MyGUI>
     {
         // Setup Dear ImGui style
         ImGui::StyleColorsDark();
-        // ImGui::StyleColorsLight();
+        disassember.setupDisassembler(cpuDebug, disassember.initAddr, disassember.finaAddr);
+        //ImGui::StyleColorsLight();
     }
     
     void Update() 
@@ -35,25 +38,7 @@ class MyGUI : public GUI<MyGUI>
         
         registers_editor.DrawWindow("Registers Editor", cpuDebug);
 
-        if(disassembledRegion != nullptr){
-
-            bool open = true;
-            ImGui::Begin("Disassembler", &open);
-            
-            for (int i = 0; i < disassembledRegion->size; i++)
-            {
-                InstructionMap map = disassembledRegion->list[i];
-                
-                ImGui::Text("$%s : %s %s %s",
-                    map.addrString, map.mneumonic, 
-                    map.data_argument, map.address_argument
-                ); ImGui::SameLine(200);
-                ImGui::Text("{%s}", map.addrMode);
-    
-            }
-            ImGui::End();
-        }
-
+        disassember.DrawWindow("Disassember");
     }
 
     void connectCpu(CPU* cpu){
@@ -63,23 +48,13 @@ class MyGUI : public GUI<MyGUI>
     void connectBus(BUS* bus){
         busDebug = bus;
     }
-    void setupDisassembler(Word initAddr, Word finAddr){
-        if (cpuDebug == nullptr){
-            disassembledRegion = nullptr;
-            return;
-        }
-
-        if (disassembledRegion != nullptr)
-            free(disassembledRegion);
-        disassembledRegion = cupDisassemble(initAddr, finAddr);
-    }
+    
     private:
     CPU* cpuDebug;
     BUS* busDebug;
     MemoryEditor mem_editor;
     RegistersEditor registers_editor;
-    InstructionList* disassembledRegion = nullptr;
-
+    Disassembler disassember;
     
 };
 int main(int argc, char *argv[])
@@ -89,7 +64,7 @@ int main(int argc, char *argv[])
     
     cpuCreate(&newCpu);
     cpuConBus(&newBus);
-    cpuReset();
+    cpuReset(); 
     
     int codeSize = 28;
     Byte code[] = { 0xA2, 0x0A, 0x8E, 0x00,
@@ -98,9 +73,14 @@ int main(int argc, char *argv[])
                     0x00, 0xA9, 0x00, 0x18,
                     0x6D, 0x01, 0x00, 0x88,
                     0xD0, 0xFA, 0x8D, 0x02,
-                    0x00, 0xEA, 0xEA, 0xEA};
+                    0x00, 0xEA, 0xEA, 0xEA };
     
-Word baseAddr = 0x8000;
+    Word baseAddr = 0x8000;
+    newCpu.PgCount = baseAddr;
+
+    cpuWrite(0xFFFC, 0x00);
+    cpuWrite(0xFFFD, 0x80);
+
 
     for (int i = 0; i < codeSize; i++)
     {
@@ -110,7 +90,6 @@ Word baseAddr = 0x8000;
     MyGUI myGUI;
     myGUI.connectBus(&newBus);
     myGUI.connectCpu(&newCpu);
-    myGUI.setupDisassembler(baseAddr, baseAddr + codeSize);
     myGUI.Run();
 
     return 0;

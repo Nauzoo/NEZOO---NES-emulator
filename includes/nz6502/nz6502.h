@@ -60,12 +60,12 @@ typedef struct CPU {
     Byte flag_N; //status flag negative            0b10000000
 
     // Convinience values:
-    Byte fetched;     // stores the last value fetched from memory
-    Word abs_address; // stores the absolute address (full memory location) for an instruction
-                      // its seted by the adressing modes
-    Byte rel_address; // stores the local address within a page
-                      // its seted by the adressing modes
-    Byte opcode;      // stores the last instruction (binary)
+    Byte fetched;            // stores the last value fetched from memory
+    Word abs_address;        // stores the absolute address (full memory location) for an instruction
+                             // its seted by the adressing modes
+    signed char rel_address; // stores the local address within a page
+                             // its seted by the adressing modes
+    Byte opcode;             // stores the last instruction (binary)
 
     Byte cycles;      // stores the number of cycles for an operation
 
@@ -92,7 +92,7 @@ Byte cpuFetch();
 void cpuClock();
 
 /** checks if a certain status register flag is activated */
-Byte cpuIsFlagActive(Byte flag);
+bool cpuIsFlagActive(Byte flag);
 
 /** sets a specific satus register flag to either 0 or 1 */
 void cpuSetStaFlag(Byte flag, bool value);

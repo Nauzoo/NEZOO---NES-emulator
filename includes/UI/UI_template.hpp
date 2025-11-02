@@ -58,7 +58,7 @@ class GUI
             
         #endif
 
-            // Create window with graphics context
+        // Create window with graphics context
         window = glfwCreateWindow(1280, 720, "NESoo - EMULATOR", nullptr, nullptr);
         if (window == nullptr)
             std::exit(1);
@@ -127,6 +127,10 @@ class GUI
     virtual void Update()
     {
         static_cast<Derived*>(this)->Update();
+    }
+
+    GLFWwindow* getWindow(){
+        return window;
     }
 
     private:

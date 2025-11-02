@@ -87,8 +87,8 @@ Byte cpuFetch(){
 }
 
 // returns one if a flag is active
-Byte cpuIsFlagActive(Byte flag) {
-    return (myCpu->StaReg & flag) > 0 ? 1 : 0;
+bool cpuIsFlagActive(Byte flag) {
+    return (myCpu->StaReg & flag) > 0 ? true : false;
 }
 
 void cpuSetStaFlag(Byte flag, bool value) {
@@ -290,7 +290,7 @@ void _interrupt() {
 
 
 void cpuIntReq() {
-    if (~cpuIsFlagActive(myCpu->flag_I)) {
+    if (!cpuIsFlagActive(myCpu->flag_I)) {
         _interrupt();
     }
 
@@ -313,8 +313,8 @@ void cpuIMPAddMod() {
 }
 
 void cpuIMMAddMod() {
-    myCpu->PgCount++;
     myCpu->abs_address = myCpu->PgCount;
+    myCpu->PgCount++;
 }
 
 void cpuZP0AddMod() {
@@ -424,7 +424,8 @@ void cpuIZYAddMod() {
 void cpuRELAddMod() {
     myCpu->rel_address = cpuRead(myCpu->PgCount, false);
     myCpu->PgCount++;
-    if (myCpu->rel_address & 0x80) {
+    if (myCpu->rel_address & 0x80) 
+    {
         myCpu->rel_address |= 0xFF00;
     }
 }
@@ -436,6 +437,7 @@ void cpuClock() {
         cpuSetStaFlag(myCpu->flag_U, true);
         
         Byte opcode = cpuRead(myCpu->PgCount, false);
+        myCpu->PgCount++;
         
         myCpu->cycles = lookup[opcode].cycles;
         
@@ -443,7 +445,6 @@ void cpuClock() {
         lookup[opcode].instruction();   // Calls the instruction itself
 
         
-        myCpu->PgCount++;
         cpuSetStaFlag(myCpu->flag_U, true);
     }
     myCpu->cycles--;
@@ -520,7 +521,7 @@ void cpuInsASL() {
 }
 
 void cpuInsBCC() {
-    if (~cpuIsFlagActive(myCpu->flag_C)) {
+    if (!cpuIsFlagActive(myCpu->flag_C)) {
 
         myCpu->cycles++;
 
@@ -583,11 +584,12 @@ void cpuInsBMI() {
 }
 
 void cpuInsBNE() {
-    if (~cpuIsFlagActive(myCpu->flag_Z)) {
+    if (!cpuIsFlagActive(myCpu->flag_Z)) {
 
         myCpu->cycles++;
 
         myCpu->abs_address = myCpu->PgCount + myCpu->rel_address;
+        
         if ((myCpu->PgCount & 0xFF00) != (myCpu->abs_address & 0xFF00))
             myCpu->cycles++;
 
@@ -596,7 +598,7 @@ void cpuInsBNE() {
 }
 
 void cpuInsBPL() {
-    if (~cpuIsFlagActive(myCpu->flag_N)) {
+    if (!cpuIsFlagActive(myCpu->flag_N)) {
 
         myCpu->cycles++;
 
@@ -614,7 +616,7 @@ void cpuInsBRK() {
 }
 
 void cpuInsBVC() {
-    if (~cpuIsFlagActive(myCpu->flag_V)) {
+    if (!cpuIsFlagActive(myCpu->flag_V)) {
 
         myCpu->cycles++;
 
